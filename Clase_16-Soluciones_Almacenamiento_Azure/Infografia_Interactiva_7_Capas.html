@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Arquitectura 7 Capas - Interactiva</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f4f7f6; color: #333; }
+        .container { display: flex; max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; min-height: 600px; }
+        .left-panel { width: 30%; background: #2c3e50; padding: 20px; color: white; border-right: 1px solid #1a252f; }
+        .right-panel { width: 70%; padding: 40px; position: relative; }
+        .layer-btn { display: block; width: 100%; padding: 15px; margin-bottom: 10px; background: #34495e; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; font-size: 16px; transition: all 0.3s ease; }
+        .layer-btn:hover { background: #3b536b; transform: translateX(5px); }
+        .layer-btn.active { background: #1abc9c; font-weight: bold; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .header h2 { margin: 0; color: #2c3e50; }
+        .layer-desc { font-size: 1.1em; color: #555; margin-bottom: 25px; line-height: 1.5; }
+        .toggle-container { display: flex; align-items: center; background: #f8f9fa; padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; }
+        .toggle-container span { font-size: 14px; color: #555; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; margin: 0 10px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #e74c3c; }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .role-card { background: #fdfdfd; border-left: 4px solid #3498db; padding: 20px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); line-height: 1.6; transition: all 0.3s; }
+        .role-title { font-weight: bold; color: #2980b9; margin-bottom: 8px; font-size: 1.1em; }
+        .obs-mode .role-card { border-left-color: #e74c3c; background: #fdf5f5; }
+        .obs-mode .role-title { color: #c0392b; }
+        .obs-mode .header h2 { color: #c0392b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel" id="layer-list">
+            <!-- Botones generados por JS -->
+        </div>
+        <div class="right-panel">
+            <div class="header">
+                <h2 id="layer-title">Selecciona una capa</h2>
+                <div class="toggle-container">
+                    <span>Normal</span>
+                    <label class="switch">
+                        <input type="checkbox" id="obs-toggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span style="color:#e74c3c; font-weight:bold;">Observabilidad</span>
+                </div>
+            </div>
+            <p id="layer-desc" class="layer-desc">Haz clic en una capa a la izquierda para ver los detalles y roles involucrados.</p>
+            <div id="roles-container"></div>
+        </div>
+    </div>
+    <script>
+        const data = [
+            {
+                id: 1, name: "1. Capa de Origen",
+                desc: "Sistemas operacionales externos e internos (Bases de datos OLTP, APIs, SaaS, IoT) que generan la información transaccional.",
+                roles: [
+                    { name: "Data Architect", normal: "Evalúa la topología de los sistemas de origen para determinar patrones de extracción (ej. CDC vs Batch) sin impactar el rendimiento transaccional de la compañía.", obs: "Si falla la observabilidad (ej. cambio de esquema silencioso en una API de terceros), el Data Architect se enfrenta a tiempos de caída en la ingesta por diseños frágiles." }
+                ]
+            },
+            {
+                id: 2, name: "2. Capa de Ingesta",
+                desc: "Mecanismo de transporte que extrae datos desde el Origen y los mueve eficientemente hacia el almacenamiento centralizado.",
+                roles: [
+                    { name: "Data Engineer", normal: "Diseña y mantiene conectores y tuberías de ingesta. Gestiona el manejo de errores de red, la contrapresión y asegura entregas idempotentes para evitar duplicados.", obs: "Falta de observabilidad en Frescura: El Data Engineer no recibe alertas si un proceso batch falla, incumpliendo los SLAs de extracción y retrasando todo el pipeline posterior." }
+                ]
+            },
+            {
+                id: 3, name: "3. Capa Raw / Landing",
+                desc: "El Data Lake inicial. La regla de oro es la inmutabilidad absoluta: los datos se almacenan exactamente como llegaron.",
+                roles: [
+                    { name: "Data Architect", normal: "Diseña la estructura jerárquica del almacenamiento (particionado físico) y define políticas de ciclo de vida (tiering) para optimizar costes Cloud.", obs: "Falta de observabilidad en Volumen: Un pico anómalo masivo de datos ingeridos puede disparar drásticamente los costes de Storage sin que el arquitecto lo prevea." },
+                    { name: "Data Engineer", normal: "Implementa la escritura física en los buckets asegurando que los metadatos de ingesta permitan reejecuciones históricas.", obs: "Sin observabilidad de Distribución, se escriben silenciosamente archivos corruptos o vacíos que luego imposibilitan los reprocesamientos lógicos." }
+                ]
+            },
+            {
+                id: 4, name: "4. Capa de Procesamiento",
+                desc: "El núcleo duro del cálculo analítico. Los datos crudos se limpian, normalizan, tipan y cruzan en formatos modernos (Delta/Iceberg).",
+                roles: [
+                    { name: "Data Engineer", normal: "Desarrolla trabajos distribuidos de alta computación (PySpark/Scala). Se encarga de limpiar strings, deduplicar, forzar esquemas y optimizar rendimiento en clústeres.", obs: "Falta de observabilidad de Esquema: Si un ID numérico en origen cambia a alfanumérico y no se detecta, el clúster Spark fallará en cascada, desperdiciando horas de cómputo costoso." }
+                ]
+            },
+            {
+                id: 5, name: "5. Capa Semántica",
+                desc: "Los datos limpios se estructuran pensando en el negocio, creando modelos dimensionales y métricas centralizadas (Metric Store).",
+                roles: [
+                    { name: "Analytics Engineer", normal: "Utiliza dbt para transformar datos limpios en modelos analíticos listos para el consumo, aplicando control de versiones y tests automatizados en SQL.", obs: "Sin observabilidad de Distribución: Una métrica clave (ej. ingresos diarios) empieza a generar valores nulos, entregando KPIs financieros falsos al negocio sin levantar errores técnicos evidentes." },
+                    { name: "BI Developer", normal: "Colabora para asegurar que el modelo dimensional responde a las necesidades de los dashboards, definiendo jerarquías complejas.", obs: "Se frustra al recibir modelos de datos estructuralmente rotos, lo que rompe las relaciones directas en sus conjuntos de datos en la herramienta de BI." }
+                ]
+            },
+            {
+                id: 6, name: "6. Capa de Acceso",
+                desc: "La interfaz final donde el dato genera valor: Dashboards, Feature Stores para algoritmos predictivos o APIs transaccionales.",
+                roles: [
+                    { name: "Data Analyst", normal: "Explota el modelo semántico mediante SQL para responder preguntas ad-hoc, extraer insights y crear visualizaciones operacionales.", obs: "Si falla el Linaje, el analista no puede saber qué tabla aguas arriba (Capa 4) está provocando que su reporte esté en blanco, paralizando el Root Cause Analysis." },
+                    { name: "Data Scientist", normal: "Consume datos históricos masivos para entrenar algoritmos de Machine Learning.", obs: "Falta de Frescura o Data Drift: Entrena modelos predictivos con información desactualizada o sesgada, lo que resulta en recomendaciones comerciales inútiles." },
+                    { name: "ML / AI Engineer", normal: "Despliega modelos escalables e integra IA Generativa para construir ecosistemas RAG.", obs: "Los agentes de IA generativa (RAG) comienzan a inventar respuestas porque la base documental ingerida falló silenciosamente días atrás." },
+                    { name: "BI Developer", normal: "Construye cuadros de mando interactivos y gestiona la experiencia de usuario.", obs: "Soporta las quejas del usuario de negocio cuando los dashboards fallan, siendo el 'front-end' de un error que ocurrió 4 capas antes." }
+                ]
+            },
+            {
+                id: 7, name: "7. Capa Transversal",
+                desc: "Gobernanza, seguridad, operaciones y observabilidad. Cruza verticalmente todas las fases del ciclo de vida del dato.",
+                roles: [
+                    { name: "Data Architect", normal: "Diseña el marco de seguridad (controles RBAC/ABAC), asegura el cumplimiento normativo (GDPR) y elige herramientas de catálogo de datos.", obs: "Sin observabilidad precisa en el Linaje, las auditorías de cumplimiento normativo (GDPR) fracasan al no poder trazar el viaje completo de los datos sensibles (PII)." },
+                    { name: "Data / Analytics Engineer", normal: "Implementan conjuntamente las alertas de observabilidad y pruebas automáticas en sus repositorios.", obs: "Sufren de 'Alert Fatigue' (fatiga de alertas) si la observabilidad no está bien calibrada, ignorando fallos críticos ocultos entre cientos de falsos positivos." }
+                ]
+            }
+        ];
+
+        let currentLayer = data[0];
+        let obsMode = false;
+
+        const listEl = document.getElementById('layer-list');
+        const titleEl = document.getElementById('layer-title');
+        const descEl = document.getElementById('layer-desc');
+        const rolesEl = document.getElementById('roles-container');
+        const toggleEl = document.getElementById('obs-toggle');
+        const rightPanelEl = document.querySelector('.right-panel');
+
+        function renderList() {
+            listEl.innerHTML = '';
+            data.forEach(layer => {
+                const btn = document.createElement('button');
+                btn.className = `layer-btn ${layer.id === currentLayer.id ? 'active' : ''}`;
+                btn.innerText = layer.name;
+                btn.onclick = () => { currentLayer = layer; renderList(); renderContent(); };
+                listEl.appendChild(btn);
+            });
+        }
+
+        function renderContent() {
+            titleEl.innerText = currentLayer.name;
+            descEl.innerText = currentLayer.desc;
+            rolesEl.innerHTML = '';
+            
+            if(obsMode) { rightPanelEl.classList.add('obs-mode'); } 
+            else { rightPanelEl.classList.remove('obs-mode'); }
+
+            currentLayer.roles.forEach(role => {
+                const card = document.createElement('div');
+                card.className = 'role-card';
+                const content = obsMode ? role.obs : role.normal;
+                card.innerHTML = `<div class="role-title">${role.name}</div><div>${content}</div>`;
+                rolesEl.appendChild(card);
+            });
+        }
+
+        toggleEl.addEventListener('change', (e) => {
+            obsMode = e.target.checked;
+            renderContent();
+        });
+
+        renderList();
+        renderContent();
+    </script>
+</body>
+</html>
