@@ -1,4 +1,4 @@
-# 🧑🏽‍💻 Clase 17 - Ejercicio 1
+# 🧑🏽‍💻 Clase 18 - Ejercicio 1
 
 ---
 
