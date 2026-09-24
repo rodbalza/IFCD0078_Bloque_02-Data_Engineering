@@ -88,81 +88,85 @@
 
 ---
 
-# 18. Ejemplo de Bind Mount con un archivo CSV
+# 18. Ejemplo de Bind Mount con archivos .txt
 
 ![image.png](image%2015.png)
-
----
-
-# 19. ¿Por qué es útil un Bind Mount para Ingeniería de Datos?
 
 ![image.png](image%2016.png)
 
 ---
 
-# 20. Introducción a Docker Networks
+# 19. ¿Por qué es útil un Bind Mount para Ingeniería de Datos?
 
 ![image.png](image%2017.png)
-
----
-
-# 21. Ver redes existentes
 
 ![image.png](image%2018.png)
 
 ---
 
-# 23. Inspeccionar una red
+# 20. Introducción a Docker Networks
 
 ![image.png](image%2019.png)
 
 ---
 
-# 24. Crear PostgreSQL dentro de la red
+# 21. Ver redes existentes
 
 ![image.png](image%2020.png)
 
 ---
 
-# 25. Comprobar la red
+# 23. Inspeccionar una red
 
 ![image.png](image%2021.png)
 
 ---
 
-# 26. Crear un segundo contenedor
+# 24. Crear PostgreSQL dentro de la red
 
 ![image.png](image%2022.png)
 
 ---
 
-# 27. Probar comunicación por nombre
+# 25. Comprobar la red
 
 ![image.png](image%2023.png)
 
 ---
 
-# 28. Idea fundamental
+# 26. Crear un segundo contenedor
 
 ![image.png](image%2024.png)
 
 ---
 
-# 29. ¿Por qué no conviene depender de IP internas?
+# 27. Probar comunicación por nombre
 
 ![image.png](image%2025.png)
 
 ---
 
-# 31. Conectar y desconectar contenedores de una red
+# 28. Idea fundamental
 
 ![image.png](image%2026.png)
 
 ---
 
-# 32. Eliminar una red
+# 29. ¿Por qué no conviene depender de IP internas?
 
 ![image.png](image%2027.png)
+
+---
+
+# 31. Conectar y desconectar contenedores de una red
+
+![image.png](image%2028.png)
+
+---
+
+# 32. Eliminar una red
+
+![image.png](image%2029.png)
 
 ---
 
@@ -513,7 +517,7 @@ postgres-red-data
 
 # 36. Laboratorio  Mini plataforma de datos persistente
 
-![image.png](image%2028.png)
+![image.png](image%2030.png)
 
 ---
 
@@ -613,19 +617,19 @@ Al terminar:
 
 # 37. Resumen de nuevos comandos
 
-![image.png](image%2029.png)
+![image.png](image%2031.png)
 
 ---
 
 # 38. Diferencias fundamentales
 
-![image.png](image%2030.png)
+![image.png](image%2032.png)
 
 ---
 
 # 39. Esquema conceptual
 
-![image.png](image%2031.png)
+![image.png](image%2033.png)
 
 ---
 
